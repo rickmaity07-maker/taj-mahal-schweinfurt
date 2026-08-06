@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import Modal from './Modal';
+import MenuItemPicker from './MenuItemPicker';
 
 const ORDER_ENDPOINT = 'https://formspree.io/f/YOUR_ORDER_FORM_ID';
 const RESERVE_ENDPOINT = 'https://formspree.io/f/YOUR_RESERVE_FORM_ID';
@@ -9,6 +10,7 @@ const RESERVE_ENDPOINT = 'https://formspree.io/f/YOUR_RESERVE_FORM_ID';
 export default function OrderForms() {
   const [modal, setModal] = useState({ open: false, title: '', message: '' });
   const [loading, setLoading] = useState<'order' | 'reserve' | null>(null);
+  const [orderItems, setOrderItems] = useState<{ name: string; qty: number }[]>([]);
 
   async function submit(
     e: FormEvent<HTMLFormElement>,
@@ -22,11 +24,17 @@ export default function OrderForms() {
     const form = e.currentTarget;
     const data = new FormData(form);
 
+    if (type === 'order') {
+      const itemsText = orderItems.map((i) => `${i.qty}x ${i.name}`).join(', ');
+      data.set('items', itemsText);
+    }
+
     try {
       if (endpoint.includes('YOUR_')) {
         await new Promise((r) => setTimeout(r, 600));
         setModal({ open: true, title: successTitle, message: successMsg });
         form.reset();
+        if (type === 'order') setOrderItems([]);
       } else {
         const res = await fetch(endpoint, {
           method: 'POST',
@@ -36,6 +44,7 @@ export default function OrderForms() {
         if (res.ok) {
           setModal({ open: true, title: successTitle, message: successMsg });
           form.reset();
+          if (type === 'order') setOrderItems([]);
         } else {
           setModal({
             open: true,
@@ -103,20 +112,23 @@ export default function OrderForms() {
               <input id="order-address" name="address" placeholder="Only if delivery" />
             </div>
             <div className="form-group">
-              <label htmlFor="order-items">Your Order *</label>
-              <textarea
-                id="order-items"
-                name="items"
-                rows={4}
-                required
-                placeholder="e.g. 1x Avocado Toast, 2x Cappuccino..."
-              />
+              <label>Your Order *</label>
+              <MenuItemPicker onChange={setOrderItems} />
+              {orderItems.length === 0 && (
+                <p style={{ fontSize: 13, color: '#999', marginTop: 6 }}>
+                  Search and select at least one dish above.
+                </p>
+              )}
             </div>
             <div className="form-group">
               <label htmlFor="order-notes">Special Requests</label>
               <textarea id="order-notes" name="notes" rows={2} placeholder="Allergies, preferred time..." />
             </div>
-            <button type="submit" className="btn btn-primary btn-full" disabled={loading === 'order'}>
+            <button
+              type="submit"
+              className="btn btn-primary btn-full"
+              disabled={loading === 'order' || orderItems.length === 0}
+            >
               {loading === 'order' ? 'Sending...' : 'Submit Order'}
             </button>
             <p className="form-note">We will confirm by phone or email shortly.</p>
