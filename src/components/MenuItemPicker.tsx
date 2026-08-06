@@ -17,16 +17,15 @@ export default function MenuItemPicker({ onChange }: Props) {
   const [showResults, setShowResults] = useState(false);
   const [selected, setSelected] = useState<SelectedItem[]>([]);
 
-  const allItems = useMemo(
-    () => menuCategories.flatMap((cat) => cat.items.map((item) => item.name)),
-    []
-  );
-
-  const results = useMemo(() => {
-    if (!query.trim()) return allItems.slice(0, 8);
-    const q = query.toLowerCase();
-    return allItems.filter((name) => name.toLowerCase().includes(q)).slice(0, 8);
-  }, [query, allItems]);
+  const filteredCategories = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return menuCategories
+      .map((cat) => ({
+        ...cat,
+        items: q ? cat.items.filter((item) => item.name.toLowerCase().includes(q)) : cat.items,
+      }))
+      .filter((cat) => cat.items.length > 0);
+  }, [query]);
 
   function addItem(name: string) {
     setSelected((prev) => {
@@ -57,7 +56,7 @@ export default function MenuItemPicker({ onChange }: Props) {
       <div className="menu-picker-search" style={{ position: 'relative' }}>
         <input
           type="text"
-          placeholder="Search dishes... (e.g. Chicken Tikka)"
+          placeholder="Search dishes, or click to browse full menu..."
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -67,7 +66,7 @@ export default function MenuItemPicker({ onChange }: Props) {
           onBlur={() => setTimeout(() => setShowResults(false), 150)}
         />
 
-        {showResults && results.length > 0 && (
+        {showResults && filteredCategories.length > 0 && (
           <div
             className="menu-picker-dropdown"
             style={{
@@ -78,25 +77,47 @@ export default function MenuItemPicker({ onChange }: Props) {
               background: '#fff',
               border: '1px solid #ddd',
               borderRadius: 6,
-              maxHeight: 220,
+              maxHeight: 320,
               overflowY: 'auto',
               zIndex: 20,
               boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
             }}
           >
-            {results.map((name) => (
-              <div
-                key={name}
-                onMouseDown={() => addItem(name)}
-                style={{
-                  padding: '10px 14px',
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #f0f0f0',
-                }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = '#f7f7f7')}
-                onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
-              >
-                {name}
+            {filteredCategories.map((cat) => (
+              <div key={cat.id}>
+                <div
+                  style={{
+                    padding: '8px 14px',
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: 'uppercase',
+                    letterSpacing: 0.5,
+                    color: '#888',
+                    background: '#fafafa',
+                    position: 'sticky',
+                    top: 0,
+                  }}
+                >
+                  {cat.label}
+                </div>
+                {cat.items.map((item) => (
+                  <div
+                    key={item.name}
+                    onMouseDown={() => addItem(item.name)}
+                    style={{
+                      padding: '10px 14px',
+                      cursor: 'pointer',
+                      borderBottom: '1px solid #f0f0f0',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                    }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#f7f7f7')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
+                  >
+                    <span>{item.name}</span>
+                    <span style={{ color: '#999', fontSize: 13 }}>{item.price}</span>
+                  </div>
+                ))}
               </div>
             ))}
           </div>
