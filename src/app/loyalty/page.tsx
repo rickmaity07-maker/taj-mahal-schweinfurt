@@ -1,70 +1,94 @@
 import type { Metadata } from 'next';
+import { Bowl, Gift, Key, Spark } from '@/components/Icons';
 import LoyaltyForm from '@/components/LoyaltyForm';
+import PageHero from '@/components/PageHero';
 
 export const metadata: Metadata = {
   title: 'Rewards',
-  description: 'Join Taj Mahal Rewards in Schweinfurt – earn points and free dishes.',
+  description: 'Join Taj Mahal Rewards in Schweinfurt – earn points on every order and redeem them for free dishes.',
 };
 
 export default function LoyaltyPage() {
   return (
     <>
-      <section className="page-hero">
-        <div className="container">
-          <h1>Taj Mahal Rewards</h1>
-          <p>Earn points with every visit. Unlock free dishes and exclusive offers.</p>
-        </div>
-      </section>
+      <PageHero
+        eyebrow="Taj Mahal Rewards"
+        title={
+          <>
+            Eat well, <em>earn more</em>
+          </>
+        }
+        text="One point for every euro you spend, whether you eat in, pick up or order delivery."
+      />
 
-      <section className="loyalty section" style={{ paddingTop: '4rem' }}>
+      <section className="section-tight">
         <div className="container">
-          <div className="loyalty-perks">
-            <div className="perk">
-              <div className="perk-icon">★</div>
-              <h4>Earn Points</h4>
-              <p>1 point for every €1 spent on food &amp; drinks</p>
+          <div className="rewards-band" data-reveal>
+            <div>
+              <h2 className="h2">
+                What members <em>get</em>
+              </h2>
+              <p className="lede">Free to join. Points never expire.</p>
             </div>
-            <div className="perk">
-              <div className="perk-icon">🎁</div>
-              <h4>Free Dishes</h4>
-              <p>Redeem points for complimentary menu items</p>
-            </div>
-            <div className="perk">
-              <div className="perk-icon">🎂</div>
-              <h4>Birthday Treat</h4>
-              <p>Special dessert during your birthday month</p>
-            </div>
-            <div className="perk">
-              <div className="perk-icon">✦</div>
-              <h4>VIP Access</h4>
-              <p>Early access to offers and seasonal specials</p>
+            <div className="perks">
+              <div className="perk">
+                <h4>
+                  <Spark /> Earn points
+                </h4>
+                <p>1 point per €1 on food and drinks.</p>
+              </div>
+              <div className="perk">
+                <h4>
+                  <Bowl /> Free dishes
+                </h4>
+                <p>Redeem points for dishes from the rewards menu.</p>
+              </div>
+              <div className="perk">
+                <h4>
+                  <Gift /> Birthday dessert
+                </h4>
+                <p>A sweet on us during your birthday month.</p>
+              </div>
+              <div className="perk">
+                <h4>
+                  <Key /> Early access
+                </h4>
+                <p>Hear about seasonal specials first.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       <section className="section">
-        <div className="container">
-          <div className="section-header">
-            <span className="section-label">How it works</span>
-            <h2 className="section-title">Simple &amp; Rewarding</h2>
+        <div className="container form-layout" style={{ alignItems: 'start' }}>
+          <div data-reveal>
+            <span className="eyebrow">How it works</span>
+            <h2 className="h2">
+              Three steps, <em>no card.</em>
+            </h2>
+            <ol className="steps">
+              <li>
+                <div>
+                  <h3>Sign up</h3>
+                  <p>Fill in the form. It takes under a minute.</p>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <h3>Give your number</h3>
+                  <p>Mention your phone number when you order or pay, and we add your points.</p>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <h3>Redeem</h3>
+                  <p>Swap points for free dishes whenever you like.</p>
+                </div>
+              </li>
+            </ol>
           </div>
-          <div className="about-grid" style={{ maxWidth: 900, margin: '0 auto' }}>
-            <div className="about-text">
-              <p>
-                <strong>1. Join free</strong> — Fill in the form. You will receive membership
-                details by email.
-              </p>
-              <p>
-                <strong>2. Earn</strong> — Give your phone number when you order or dine. Points
-                are added automatically.
-              </p>
-              <p>
-                <strong>3. Redeem</strong> — Use points for free items from our rewards menu.
-              </p>
-            </div>
-            <LoyaltyForm />
-          </div>
+          <LoyaltyForm />
         </div>
       </section>
     </>

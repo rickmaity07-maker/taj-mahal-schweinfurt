@@ -1,87 +1,66 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
 import Modal from './Modal';
+import { useFormSubmit } from './useFormSubmit';
 
 const ENDPOINT = 'https://formspree.io/f/YOUR_LOYALTY_FORM_ID';
 
-export default function LoyaltyForm() {
-  const [modal, setModal] = useState({ open: false, title: '', message: '' });
-  const [loading, setLoading] = useState(false);
+const months = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December',
+];
 
-  async function onSubmit(e: FormEvent<HTMLFormElement>) {
-    e.preventDefault();
-    setLoading(true);
-    const form = e.currentTarget;
-    const data = new FormData(form);
-    try {
-      if (ENDPOINT.includes('YOUR_')) {
-        await new Promise((r) => setTimeout(r, 600));
-        setModal({
-          open: true,
-          title: 'Welcome to the Club!',
-          message:
-            'You are now part of Maison Rewards. Check your email for your member details and first offer.',
-        });
-        form.reset();
-      } else {
-        const res = await fetch(ENDPOINT, {
-          method: 'POST',
-          body: data,
-          headers: { Accept: 'application/json' },
-        });
-        if (res.ok) {
-          setModal({
-            open: true,
-            title: 'Welcome to the Club!',
-            message: 'Check your email for your member details.',
-          });
-          form.reset();
-        } else {
-          setModal({ open: true, title: 'Error', message: 'Please try again.' });
-        }
-      }
-    } catch {
-      setModal({ open: true, title: 'Error', message: 'Connection problem. Please try again.' });
-    } finally {
-      setLoading(false);
-    }
-  }
+export default function LoyaltyForm() {
+  const { loading, modal, onSubmit, close } = useFormSubmit({
+    endpoint: ENDPOINT,
+    success: {
+      title: 'Welcome to Taj Mahal Rewards',
+      message: 'You’re signed up. Give your phone number when you next order and your points start adding up.',
+    },
+  });
 
   return (
     <>
-      <div className="order-card">
-        <h3>Join Maison Rewards</h3>
+      <div className="panel" data-reveal style={{ ['--d' as string]: 1 }}>
+        <div className="panel-head">
+          <span className="panel-step">Free to join</span>
+          <h2>Become a member</h2>
+        </div>
         <form onSubmit={onSubmit}>
-          <input type="hidden" name="_subject" value="New Loyalty Member – La Maison" />
-          <div className="form-group">
-            <label htmlFor="loy-name">Full Name *</label>
-            <input id="loy-name" name="name" required placeholder="Your name" />
+          <input type="hidden" name="_subject" value="New rewards member – Taj Mahal Schweinfurt" />
+          <div className="field">
+            <label htmlFor="loy-name">Name</label>
+            <input id="loy-name" name="name" required autoComplete="name" placeholder="Your full name" />
           </div>
-          <div className="form-group">
-            <label htmlFor="loy-email">Email *</label>
-            <input id="loy-email" name="email" type="email" required placeholder="you@example.com" />
+          <div className="field">
+            <label htmlFor="loy-email">Email</label>
+            <input id="loy-email" name="email" type="email" required autoComplete="email" placeholder="name@example.de" />
           </div>
-          <div className="form-group">
-            <label htmlFor="loy-phone">Phone *</label>
-            <input id="loy-phone" name="phone" type="tel" required placeholder="+1 234 567 890" />
+          <div className="field">
+            <label htmlFor="loy-phone">Phone</label>
+            <input id="loy-phone" name="phone" type="tel" required autoComplete="tel" placeholder="+49 151 2345 6789" />
+            <p className="field-hint">We use this to find your points when you order.</p>
           </div>
-          <div className="form-group">
-            <label htmlFor="loy-birthday">Birthday (month &amp; day)</label>
-            <input id="loy-birthday" name="birthday" placeholder="e.g. March 15" />
+          <div className="field">
+            <label htmlFor="loy-birthday">
+              Birthday month <span className="opt">(optional)</span>
+            </label>
+            <select id="loy-birthday" name="birthday_month" defaultValue="">
+              <option value="">Prefer not to say</option>
+              {months.map((m) => (
+                <option key={m} value={m}>
+                  {m}
+                </option>
+              ))}
+            </select>
           </div>
-          <button type="submit" className="btn btn-primary btn-full" disabled={loading}>
-            {loading ? 'Sending...' : 'Join Free'}
+          <button type="submit" className="btn btn-accent btn-full" disabled={loading}>
+            {loading ? 'Sending…' : 'Join for free'}
           </button>
-          <p className="form-note">No spam. Unsubscribe anytime.</p>
+          <p className="form-note">No spam. Unsubscribe any time.</p>
         </form>
       </div>
-      <Modal
-        open={modal.open}
-        title={modal.title}
-        message={modal.message}
-        onClose={() => setModal((m) => ({ ...m, open: false }))}
-      />
+      <Modal {...modal} onClose={close} />
     </>
   );
 }

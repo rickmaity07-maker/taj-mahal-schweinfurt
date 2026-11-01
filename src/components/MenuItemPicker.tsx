@@ -1,171 +1,165 @@
 'use client';
 
-import { useMemo, useState } from 'react';
-import { menuCategories } from '@/lib/menu-data';
+import { KeyboardEvent, useMemo, useState } from 'react';
+import { findMenuItem, formatPrice, menuCategories, parsePrice } from '@/lib/menu-data';
+import { Search } from './Icons';
 
-type SelectedItem = {
+export type SelectedItem = {
   name: string;
   qty: number;
 };
 
 type Props = {
+  value: SelectedItem[];
   onChange: (items: SelectedItem[]) => void;
 };
 
-export default function MenuItemPicker({ onChange }: Props) {
+export default function MenuItemPicker({ value, onChange }: Props) {
   const [query, setQuery] = useState('');
-  const [showResults, setShowResults] = useState(false);
-  const [selected, setSelected] = useState<SelectedItem[]>([]);
+  const [open, setOpen] = useState(false);
+  const [highlight, setHighlight] = useState(0);
 
-  const filteredCategories = useMemo(() => {
+  const groups = useMemo(() => {
     const q = query.trim().toLowerCase();
     return menuCategories
       .map((cat) => ({
         ...cat,
-        items: q ? cat.items.filter((item) => item.name.toLowerCase().includes(q)) : cat.items,
+        items: q
+          ? cat.items.filter(
+              (i) => i.name.toLowerCase().includes(q) || i.description.toLowerCase().includes(q)
+            )
+          : cat.items,
       }))
       .filter((cat) => cat.items.length > 0);
   }, [query]);
 
-  function addItem(name: string) {
-    setSelected((prev) => {
-      const existing = prev.find((i) => i.name === name);
-      const next = existing
-        ? prev.map((i) => (i.name === name ? { ...i, qty: i.qty + 1 } : i))
-        : [...prev, { name, qty: 1 }];
-      onChange(next);
-      return next;
-    });
+  const flat = useMemo(() => groups.flatMap((g) => g.items), [groups]);
+
+  const total = value.reduce((sum, i) => sum + parsePrice(findMenuItem(i.name)?.price ?? '0') * i.qty, 0);
+
+  function add(name: string) {
+    const existing = value.find((i) => i.name === name);
+    onChange(
+      existing
+        ? value.map((i) => (i.name === name ? { ...i, qty: i.qty + 1 } : i))
+        : [...value, { name, qty: 1 }]
+    );
     setQuery('');
-    setShowResults(false);
+    setOpen(false);
+    setHighlight(0);
   }
 
-  function updateQty(name: string, qty: number) {
-    setSelected((prev) => {
-      const next =
-        qty <= 0
-          ? prev.filter((i) => i.name !== name)
-          : prev.map((i) => (i.name === name ? { ...i, qty } : i));
-      onChange(next);
-      return next;
-    });
+  function setQty(name: string, qty: number) {
+    onChange(qty <= 0 ? value.filter((i) => i.name !== name) : value.map((i) => (i.name === name ? { ...i, qty } : i)));
+  }
+
+  function onKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setOpen(true);
+      setHighlight((h) => Math.min(h + 1, flat.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlight((h) => Math.max(h - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (open && flat[highlight]) {
+        e.preventDefault();
+        add(flat[highlight].name);
+      }
+    } else if (e.key === 'Escape') {
+      setOpen(false);
+    }
   }
 
   return (
-    <div className="menu-picker">
-      <div className="menu-picker-search" style={{ position: 'relative' }}>
+    <div className="picker">
+      <div className="picker-search">
+        <Search />
         <input
+          id="order-search"
           type="text"
-          placeholder="Search dishes, or click to browse full menu..."
+          role="combobox"
+          aria-expanded={open}
+          aria-controls="picker-list"
+          aria-autocomplete="list"
+          autoComplete="off"
+          placeholder="Search dishes, e.g. korma or naan"
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
-            setShowResults(true);
+            setOpen(true);
+            setHighlight(0);
           }}
-          onFocus={() => setShowResults(true)}
-          onBlur={() => setTimeout(() => setShowResults(false), 150)}
+          onFocus={() => setOpen(true)}
+          onBlur={() => setTimeout(() => setOpen(false), 150)}
+          onKeyDown={onKeyDown}
         />
-
-        {showResults && filteredCategories.length > 0 && (
-          <div
-            className="menu-picker-dropdown"
-            style={{
-              position: 'absolute',
-              top: '100%',
-              left: 0,
-              right: 0,
-              background: '#fff',
-              border: '1px solid #ddd',
-              borderRadius: 6,
-              maxHeight: 320,
-              overflowY: 'auto',
-              zIndex: 20,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
-            }}
-          >
-            {filteredCategories.map((cat) => (
-              <div key={cat.id}>
-                <div
-                  style={{
-                    padding: '8px 14px',
-                    fontSize: 12,
-                    fontWeight: 700,
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.5,
-                    color: '#888',
-                    background: '#fafafa',
-                    position: 'sticky',
-                    top: 0,
-                  }}
-                >
-                  {cat.label}
-                </div>
-                {cat.items.map((item) => (
-                  <div
-                    key={item.name}
-                    onMouseDown={() => addItem(item.name)}
-                    style={{
-                      padding: '10px 14px',
-                      cursor: 'pointer',
-                      borderBottom: '1px solid #f0f0f0',
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                    }}
-                    onMouseEnter={(e) => (e.currentTarget.style.background = '#f7f7f7')}
-                    onMouseLeave={(e) => (e.currentTarget.style.background = '#fff')}
-                  >
-                    <span>{item.name}</span>
-                    <span style={{ color: '#999', fontSize: 13 }}>{item.price}</span>
-                  </div>
-                ))}
-              </div>
-            ))}
-          </div>
-        )}
       </div>
 
-      {selected.length > 0 && (
-        <div className="menu-picker-selected" style={{ marginTop: 12 }}>
-          {selected.map((item) => (
-            <div
-              key={item.name}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 0',
-                borderBottom: '1px solid #eee',
-              }}
-            >
-              <span>{item.name}</span>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <button
-                  type="button"
-                  onClick={() => updateQty(item.name, item.qty - 1)}
-                  style={{ width: 28, height: 28, cursor: 'pointer' }}
-                >
-                  −
-                </button>
-                <span>{item.qty}</span>
-                <button
-                  type="button"
-                  onClick={() => updateQty(item.name, item.qty + 1)}
-                  style={{ width: 28, height: 28, cursor: 'pointer' }}
-                >
-                  +
-                </button>
-                <button
-                  type="button"
-                  onClick={() => updateQty(item.name, 0)}
-                  style={{ marginLeft: 8, cursor: 'pointer', color: '#c0392b' }}
-                >
-                  Remove
-                </button>
-              </div>
+      {open && (
+        <div className="picker-dropdown" id="picker-list" role="listbox">
+          {groups.length === 0 && <p className="picker-empty">No dishes match “{query}”.</p>}
+          {groups.map((cat) => (
+            <div key={cat.id}>
+              <div className="picker-group">{cat.label}</div>
+              {cat.items.map((item) => {
+                const i = flat.indexOf(item);
+                return (
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={i === highlight}
+                    key={item.name}
+                    className={`picker-option${i === highlight ? ' highlight' : ''}`}
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      add(item.name);
+                    }}
+                    onMouseEnter={() => setHighlight(i)}
+                  >
+                    <span>{item.name}</span>
+                    <small>{item.price}</small>
+                  </button>
+                );
+              })}
             </div>
           ))}
         </div>
       )}
+
+      <div className="cart" aria-live="polite">
+        {value.length === 0 ? (
+          <div className="cart-empty">
+            <strong>Your order is empty</strong>
+            Search above or open the list to add dishes.
+          </div>
+        ) : (
+          <>
+            {value.map((item) => {
+              const price = parsePrice(findMenuItem(item.name)?.price ?? '0');
+              return (
+                <div className="cart-row" key={item.name}>
+                  <span className="name">{item.name}</span>
+                  <div className="qty">
+                    <button type="button" onClick={() => setQty(item.name, item.qty - 1)} aria-label={`One less ${item.name}`}>
+                      −
+                    </button>
+                    <output>{item.qty}</output>
+                    <button type="button" onClick={() => setQty(item.name, item.qty + 1)} aria-label={`One more ${item.name}`}>
+                      +
+                    </button>
+                  </div>
+                  <span className="line-price">{formatPrice(price * item.qty)}</span>
+                </div>
+              );
+            })}
+            <div className="cart-total">
+              <span>Subtotal</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
