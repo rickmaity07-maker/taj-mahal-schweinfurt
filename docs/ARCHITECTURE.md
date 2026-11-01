@@ -28,6 +28,8 @@ src/
     useFormSubmit.ts      Shared client submit logic (JSON, field errors, dialog)
     FormBits.tsx          Field errors, honeypot, GDPR consent checkbox
     MapEmbed.tsx          Click-to-load Google Map (no request before consent)
+    Motion.tsx            GSAP + ScrollTrigger motion layer (skipped for reduced motion)
+    Reveal.tsx            CSS fallback reveal used when GSAP motion is off
   lib/
     site.ts               Address, phone, hours, open-now logic, reservation slots
     menu-data.ts          Menu: single source of truth for names and prices
@@ -51,6 +53,9 @@ docs/                     This file and SECURITY.md
 - **Static CSP without nonces**, so pages stay cacheable. See `next.config.ts`.
 - **Rate limiting is in memory.** Fine for one server. On serverless or several instances, swap
   `createRateLimiter` for a shared store (for example Upstash Redis) with the same interface.
+- **Motion is one layer.** `Motion.tsx` targets existing class names and `data-reveal`, adds
+  `.gsap` to `<html>` while active, and reverts everything on route change. Pages carry no
+  animation code.
 - **Plain CSS with design tokens** instead of a framework: one file, no build plugins.
 
 ## Adding a form

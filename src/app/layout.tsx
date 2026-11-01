@@ -3,6 +3,7 @@ import { Fraunces, Outfit } from 'next/font/google';
 import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import Motion from '@/components/Motion';
 import Reveal from '@/components/Reveal';
 import RestaurantJsonLd from '@/components/RestaurantJsonLd';
 import { siteUrl } from '@/lib/site';
@@ -43,7 +44,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${outfit.variable}`}>
+    <html lang="en" data-scroll-behavior="smooth" className={`${fraunces.variable} ${outfit.variable}`}>
       <body>
         <a href="#main" className="skip-link">
           Skip to content
@@ -52,6 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <Footer />
         <Reveal />
+        <Motion />
         <RestaurantJsonLd />
       </body>
     </html>

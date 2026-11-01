@@ -2343,3 +2343,32 @@ em {
   gap: 0.75rem;
   justify-content: center;
 }
+
+/* ---------- GSAP motion layer ----------
+   When Motion.tsx is active it adds .gsap to <html> and takes over every
+   animated property, so the CSS fallbacks below step aside. */
+
+.gsap [data-reveal] {
+  opacity: 1;
+  transform: none;
+  transition: none;
+}
+.gsap .hero-media img {
+  animation: none;
+  transform: none;
+}
+.gsap .dish img,
+.gsap .feature-media img,
+.gsap .story-media img {
+  transition: none;
+}
+.gsap .btn {
+  transition-property: background, color, border-color, box-shadow;
+  will-change: transform;
+}
+.gsap .hero-media {
+  will-change: transform;
+}
+.strip {
+  transform-origin: center;
+}
