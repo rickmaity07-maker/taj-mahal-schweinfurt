@@ -1,3 +1,4 @@
+import MapEmbed from '@/components/MapEmbed';
 import type { Metadata } from 'next';
 import ContactForm from '@/components/ContactForm';
 import OpenStatus from '@/components/OpenStatus';
@@ -68,15 +69,7 @@ export default function ContactPage() {
               </dd>
             </div>
           </dl>
-          <div className="map-frame light" data-reveal style={{ ['--d' as string]: 1 }}>
-            <iframe
-              src={site.mapsEmbed}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Map showing Taj Mahal at Am Zeughaus 28, Schweinfurt"
-              allowFullScreen
-            />
-          </div>
+          <MapEmbed light />
         </div>
       </section>
 

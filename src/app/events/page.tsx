@@ -28,7 +28,7 @@ export default function EventsPage() {
             <div className="feature-media" data-reveal>
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&q=80"
+                src="/images/photo-1414235077428-338989a2e8c0.jpg"
                 alt="Long table set for a group dinner"
                 loading="lazy"
               />

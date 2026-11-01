@@ -4,6 +4,8 @@ import './globals.css';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
+import RestaurantJsonLd from '@/components/RestaurantJsonLd';
+import { siteUrl } from '@/lib/site';
 
 const fraunces = Fraunces({
   subsets: ['latin'],
@@ -19,6 +21,7 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: 'Taj Mahal Schweinfurt – Indian Restaurant',
     template: '%s – Taj Mahal Schweinfurt',
@@ -30,7 +33,7 @@ export const metadata: Metadata = {
     description: 'Indian specialties, freshly prepared every day. Am Zeughaus 28, Schweinfurt.',
     type: 'website',
     locale: 'en_GB',
-    images: ['https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=1200&q=80'],
+    images: ['/images/photo-1585937421612-70a008356fbe.jpg'],
   },
 };
 
@@ -49,6 +52,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <main id="main">{children}</main>
         <Footer />
         <Reveal />
+        <RestaurantJsonLd />
       </body>
     </html>
   );

@@ -1361,14 +1361,6 @@ em {
   margin-top: 0.5rem;
 }
 
-.menu-legend {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.75rem 1.25rem;
-  align-items: center;
-  color: var(--muted);
-  font-size: 0.9rem;
-}
 
 .menu-cta {
   position: relative;
@@ -1592,14 +1584,6 @@ em {
   margin-top: 0.9rem;
 }
 
-.form-status {
-  border-radius: var(--r-md);
-  padding: 0.85rem 1rem;
-  font-size: 0.92rem;
-  margin-bottom: 1rem;
-  background: rgba(163, 58, 42, 0.08);
-  color: var(--danger);
-}
 
 /* Menu picker */
 .picker {
@@ -2290,4 +2274,72 @@ em {
     opacity: 1;
     transform: none;
   }
+}
+
+/* ---------- Form extras ---------- */
+
+.hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+.check {
+  display: flex !important;
+  gap: 0.75rem;
+  align-items: flex-start;
+  font-weight: 400 !important;
+  font-size: 0.9rem !important;
+  color: var(--muted) !important;
+  cursor: pointer;
+}
+.check input {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  min-height: 0 !important;
+  margin-top: 2px;
+  padding: 0 !important;
+  accent-color: var(--accent);
+  appearance: auto !important;
+  -webkit-appearance: checkbox !important;
+}
+.check a {
+  color: var(--accent);
+  border-bottom: 1px solid currentColor;
+}
+
+.field [aria-invalid='true'] {
+  border-color: var(--danger);
+}
+
+/* Consent-gated map */
+.map-consent {
+  height: 100%;
+  min-height: inherit;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(176, 84, 43, 0.18), transparent 60%),
+    repeating-linear-gradient(45deg, rgba(243, 235, 223, 0.04) 0 2px, transparent 2px 14px);
+}
+.map-consent p {
+  max-width: 40ch;
+  font-size: 0.92rem;
+  color: var(--on-night-muted);
+}
+.map-frame.light .map-consent p {
+  color: var(--muted);
+}
+.map-consent .actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
 }

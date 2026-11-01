@@ -21,7 +21,7 @@ export const menuCategories: MenuCategory[] = [
     label: 'Starters',
     intro: 'Crisp, fried in chickpea batter and served with house chutneys.',
     items: [
-      { name: 'Samosa', price: '6,50 €', description: 'Pastry filled with spiced vegetables', image: 'https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&q=80', tags: ['veg'] },
+      { name: 'Samosa', price: '6,50 €', description: 'Pastry filled with spiced vegetables', image: '/images/photo-1601050690597-df0568f70950.jpg', tags: ['veg'] },
       { name: 'Onion Bhaji', price: '6,50 €', description: 'Onion rings in chickpea batter', image: '/Onion Bhaji.webp', tags: ['veg'] },
       { name: 'Vegetable Pakora', price: '6,50 €', description: 'Mixed vegetables in chickpea batter', image: '/Vegetable Pakora.webp', tags: ['veg'] },
       { name: 'Paneer Pakora', price: '6,90 €', description: 'Homemade cheese in chickpea batter', image: '/Paneer Pakora.webp', tags: ['veg'] },
@@ -61,10 +61,10 @@ export const menuCategories: MenuCategory[] = [
     label: 'Vegetarian',
     intro: 'Homemade paneer, lentils and seasonal vegetables.',
     items: [
-      { name: 'Shahi Paneer', price: '14,50 €', description: 'Homemade cheese in coconut, almond and cream sauce', image: 'https://images.unsplash.com/photo-1631452180519-c014fe946bc7?w=400&q=80', tags: ['veg'] },
+      { name: 'Shahi Paneer', price: '14,50 €', description: 'Homemade cheese in coconut, almond and cream sauce', image: '/images/photo-1631452180519-c014fe946bc7.jpg', tags: ['veg'] },
       { name: 'Alu Matar', price: '7,50 €', description: 'Spiced potatoes and peas in special sauce', image: '/Alu Matar.webp', tags: ['veg'] },
       { name: 'Mango Sabji', price: '7,90 €', description: 'Mixed vegetables with mango sauce', image: '/Mango Sabji.webp', tags: ['veg'] },
-      { name: 'Dal Makhani', price: '7,50 €', description: 'Indian lentils with ginger and coriander', image: 'https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80', tags: ['veg'] },
+      { name: 'Dal Makhani', price: '7,50 €', description: 'Indian lentils with ginger and coriander', image: '/images/photo-1547592166-23ac45744acd.jpg', tags: ['veg'] },
       { name: 'Palak Paneer', price: '8,90 €', description: 'Homemade cheese with creamed spinach', image: '/Palak Paneer.webp', tags: ['veg', 'popular'] },
       { name: 'Vegetable Biryani', price: '9,50 €', description: 'Fragrant rice with mixed vegetables', image: '/Vegetable Biryani.webp', tags: ['veg'] },
     ],
@@ -102,7 +102,7 @@ export const tagLabels: Record<MenuTag, string> = {
   popular: 'Guest favourite',
 };
 
-export const allMenuItems = menuCategories.flatMap((c) => c.items);
+const allMenuItems = menuCategories.flatMap((c) => c.items);
 
 export function findMenuItem(name: string) {
   return allMenuItems.find((i) => i.name === name);

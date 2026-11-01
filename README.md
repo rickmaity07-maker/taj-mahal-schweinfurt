@@ -1,36 +1,54 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Taj Mahal Schweinfurt – website
 
-## Getting Started
+Restaurant website for Taj Mahal, Am Zeughaus 28, 97421 Schweinfurt. Menu, online ordering
+(pickup / delivery), table requests, contact form and a rewards sign-up.
 
-First, run the development server:
+Built with Next.js 16 (App Router), React 19 and plain CSS. No database: form submissions are
+validated on the server and emailed to the restaurant.
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+cp .env.example .env.local   # optional in development
+npm run dev                  # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Without email settings, submissions are printed in the dev server console.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command             | What it does                              |
+| ------------------- | ----------------------------------------- |
+| `npm run dev`       | Dev server with live reload               |
+| `npm run build`     | Production build                          |
+| `npm start`         | Serve the production build                |
+| `npm run lint`      | ESLint                                    |
+| `npm run typecheck` | TypeScript, no output                     |
+| `npm test`          | Unit tests (Vitest)                       |
+| `npm run check`     | Lint + typecheck + tests (run before PRs) |
 
-## Learn More
+## Configuration
 
-To learn more about Next.js, take a look at the following resources:
+See [`.env.example`](.env.example).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Variable               | Required in prod | Purpose                                        |
+| ---------------------- | ---------------- | ---------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL` | yes              | Canonical URL for sitemap and social previews  |
+| `RESEND_API_KEY`       | yes              | API key for [Resend](https://resend.com)       |
+| `NOTIFY_EMAIL_TO`      | yes              | Where orders and messages go (comma-separated) |
+| `NOTIFY_EMAIL_FROM`    | yes              | Sender on a domain verified in Resend          |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+If email is not configured in production, the API answers `503` and the form tells the guest to call.
 
-## Deploy on Vercel
+## Before going live
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- [ ] Fill in the `[todo]` fields in `/impressum` and `/datenschutz` (owner, VAT ID, host, retention).
+- [ ] Sign a data processing agreement (AVV) with the host and with Resend.
+- [ ] Set the environment variables above on the host.
+- [ ] Replace stock photos in `public/images/` with your own if your licence doesn't cover them.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## More
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Security and privacy](docs/SECURITY.md)

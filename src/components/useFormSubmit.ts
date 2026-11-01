@@ -5,46 +5,49 @@ import { FormEvent, useCallback, useState } from 'react';
 export type ModalState = { open: boolean; title: string; message: string; error?: boolean };
 
 type Options = {
+  /** API route, e.g. "/api/order". */
   endpoint: string;
   success: { title: string; message: string };
-  /** Extra fields to add before sending. */
-  extend?: (data: FormData) => void;
+  /** Extra fields to add to the JSON payload. */
+  extend?: () => Record<string, unknown>;
   onSuccess?: () => void;
 };
 
-/**
- * Shared submit logic for Formspree-style endpoints.
- * While the endpoint still contains "YOUR_", submissions are simulated so the site works in demo mode.
- */
+const FALLBACK = 'Please try again in a moment, or call us on +49 9721 24747.';
+
+/** Submits a form as JSON to one of our API routes and tracks loading, field errors and the result dialog. */
 export function useFormSubmit({ endpoint, success, extend, onSuccess }: Options) {
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [modal, setModal] = useState<ModalState>({ open: false, title: '', message: '' });
 
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
-    const data = new FormData(form);
-    extend?.(data);
+    const payload: Record<string, unknown> = Object.fromEntries(new FormData(form).entries());
+    payload.consent = (form.elements.namedItem('consent') as HTMLInputElement | null)?.checked ?? false;
+    Object.assign(payload, extend?.());
+
     setLoading(true);
+    setErrors({});
     try {
-      let ok = true;
-      if (endpoint.includes('YOUR_')) {
-        await new Promise((r) => setTimeout(r, 700));
-      } else {
-        const res = await fetch(endpoint, { method: 'POST', body: data, headers: { Accept: 'application/json' } });
-        ok = res.ok;
-      }
-      if (ok) {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const body = (await res.json().catch(() => ({}))) as { error?: string; fields?: Record<string, string> };
+
+      if (res.ok) {
         setModal({ open: true, ...success });
         form.reset();
         onSuccess?.();
+      } else if (res.status === 422 && body.fields) {
+        setErrors(body.fields);
+        const first = Object.keys(body.fields)[0];
+        form.querySelector<HTMLElement>(`[name="${first}"]`)?.focus();
       } else {
-        setModal({
-          open: true,
-          error: true,
-          title: 'We couldn’t send that',
-          message: 'Please try again in a moment, or call us on +49 9721 24747.',
-        });
+        setModal({ open: true, error: true, title: 'We couldn’t send that', message: body.error ?? FALLBACK });
       }
     } catch {
       setModal({
@@ -60,5 +63,5 @@ export function useFormSubmit({ endpoint, success, extend, onSuccess }: Options)
 
   const close = useCallback(() => setModal((m) => ({ ...m, open: false })), []);
 
-  return { loading, modal, onSubmit, close };
+  return { loading, errors, modal, onSubmit, close };
 }

@@ -1,14 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { Consent, errorProps, FieldError, Honeypot } from './FormBits';
 import Modal from './Modal';
+import { GUEST_OPTIONS } from '@/lib/form-options';
 import MenuItemPicker, { SelectedItem } from './MenuItemPicker';
 import { useFormSubmit } from './useFormSubmit';
-import { findMenuItem, formatPrice, parsePrice } from '@/lib/menu-data';
 import { reservationSlots, site } from '@/lib/site';
-
-const ORDER_ENDPOINT = 'https://formspree.io/f/YOUR_ORDER_FORM_ID';
-const RESERVE_ENDPOINT = 'https://formspree.io/f/YOUR_RESERVE_FORM_ID';
 
 export default function OrderForms() {
   const [items, setItems] = useState<SelectedItem[]>([]);
@@ -16,17 +14,13 @@ export default function OrderForms() {
   const [today] = useState(() => new Date().toISOString().split('T')[0]);
 
   const order = useFormSubmit({
-    endpoint: ORDER_ENDPOINT,
+    endpoint: '/api/order',
     success: {
       title: 'Order received',
       message:
         'Thank you. We’ll call or email you shortly to confirm your order and the pickup or delivery time.',
     },
-    extend: (data) => {
-      const total = items.reduce((s, i) => s + parsePrice(findMenuItem(i.name)?.price ?? '0') * i.qty, 0);
-      data.set('items', items.map((i) => `${i.qty}x ${i.name}`).join(', '));
-      data.set('subtotal', formatPrice(total));
-    },
+    extend: () => ({ items }),
     onSuccess: () => {
       setItems([]);
       setType('pickup');
@@ -34,7 +28,7 @@ export default function OrderForms() {
   });
 
   const reserve = useFormSubmit({
-    endpoint: RESERVE_ENDPOINT,
+    endpoint: '/api/reservation',
     success: {
       title: 'Request received',
       message: 'Thank you. We’ll confirm your table by email or phone as soon as we can.',
@@ -51,7 +45,7 @@ export default function OrderForms() {
             <p>Choose your dishes, tell us where to bring them, and we’ll confirm by phone.</p>
           </div>
           <form onSubmit={order.onSubmit} noValidate={false}>
-            <input type="hidden" name="_subject" value="New order – Taj Mahal Schweinfurt" />
+            <Honeypot />
 
             <div className="field">
               <span className="label" id="type-label">
@@ -88,12 +82,14 @@ export default function OrderForms() {
             <div className="field">
               <label htmlFor="order-search">Your dishes</label>
               <MenuItemPicker value={items} onChange={setItems} />
+              <FieldError id="order-search" message={order.errors.items} />
             </div>
 
             <div className="field-row">
               <div className="field">
                 <label htmlFor="order-name">Name</label>
-                <input id="order-name" name="name" required autoComplete="name" placeholder="Your full name" />
+                <input id="order-name" name="name" required autoComplete="name" placeholder="Your full name" {...errorProps('order-name', order.errors.name)} />
+                <FieldError id="order-name" message={order.errors.name} />
               </div>
               <div className="field">
                 <label htmlFor="order-phone">Phone</label>
@@ -105,7 +101,8 @@ export default function OrderForms() {
                   autoComplete="tel"
                   placeholder="+49 151 2345 6789"
                   pattern="[0-9+()\s\-]{6,}"
-                />
+                {...errorProps('order-phone', order.errors.phone)} />
+                <FieldError id="order-phone" message={order.errors.phone} />
               </div>
             </div>
 
@@ -113,7 +110,8 @@ export default function OrderForms() {
               <label htmlFor="order-email">
                 Email <span className="opt">(optional)</span>
               </label>
-              <input id="order-email" name="email" type="email" autoComplete="email" placeholder="name@example.de" />
+              <input id="order-email" name="email" type="email" autoComplete="email" placeholder="name@example.de" {...errorProps('order-email', order.errors.email)} />
+                <FieldError id="order-email" message={order.errors.email} />
             </div>
 
             {type === 'delivery' && (
@@ -125,7 +123,8 @@ export default function OrderForms() {
                   required
                   autoComplete="street-address"
                   placeholder="Street, number, postcode"
-                />
+                {...errorProps('order-address', order.errors.address)} />
+                <FieldError id="order-address" message={order.errors.address} />
                 <p className="field-hint">We deliver within Schweinfurt.</p>
               </div>
             )}
@@ -137,6 +136,7 @@ export default function OrderForms() {
               <textarea id="order-notes" name="notes" rows={2} placeholder="Allergies, spice level, preferred time" />
             </div>
 
+            <Consent id="order-consent" error={order.errors.consent} />
             <button type="submit" className="btn btn-accent btn-full" disabled={order.loading || items.length === 0}>
               {order.loading ? 'Sending…' : items.length === 0 ? 'Add a dish to continue' : 'Send order'}
             </button>
@@ -152,15 +152,16 @@ export default function OrderForms() {
               <p>Send a request and we’ll confirm availability.</p>
             </div>
             <form onSubmit={reserve.onSubmit}>
-              <input type="hidden" name="_subject" value="Table reservation – Taj Mahal Schweinfurt" />
+              <Honeypot />
               <div className="field-row">
                 <div className="field">
                   <label htmlFor="res-date">Date</label>
-                  <input id="res-date" name="date" type="date" required min={today} />
+                  <input id="res-date" name="date" type="date" required min={today} {...errorProps('res-date', reserve.errors.date)} />
+                <FieldError id="res-date" message={reserve.errors.date} />
                 </div>
                 <div className="field">
                   <label htmlFor="res-time">Time</label>
-                  <select id="res-time" name="time" required defaultValue="">
+                  <select id="res-time" name="time" required defaultValue="" {...errorProps('res-time', reserve.errors.time)}>
                     <option value="" disabled>
                       Choose
                     </option>
@@ -175,9 +176,9 @@ export default function OrderForms() {
               <div className="field">
                 <label htmlFor="res-guests">Guests</label>
                 <select id="res-guests" name="guests" required defaultValue="2">
-                  {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+                  {GUEST_OPTIONS.filter((n) => n !== '9+').map((n) => (
                     <option key={n} value={n}>
-                      {n} {n > 1 ? 'guests' : 'guest'}
+                      {n} {n === '1' ? 'guest' : 'guests'}
                     </option>
                   ))}
                   <option value="9+">9 or more (we’ll call you)</option>
@@ -185,16 +186,19 @@ export default function OrderForms() {
               </div>
               <div className="field">
                 <label htmlFor="res-name">Name</label>
-                <input id="res-name" name="name" required autoComplete="name" placeholder="Your full name" />
+                <input id="res-name" name="name" required autoComplete="name" placeholder="Your full name" {...errorProps('res-name', reserve.errors.name)} />
+                <FieldError id="res-name" message={reserve.errors.name} />
               </div>
               <div className="field-row">
                 <div className="field">
                   <label htmlFor="res-phone">Phone</label>
-                  <input id="res-phone" name="phone" type="tel" required autoComplete="tel" placeholder="+49 151 2345 6789" />
+                  <input id="res-phone" name="phone" type="tel" required autoComplete="tel" placeholder="+49 151 2345 6789" {...errorProps('res-phone', reserve.errors.phone)} />
+                <FieldError id="res-phone" message={reserve.errors.phone} />
                 </div>
                 <div className="field">
                   <label htmlFor="res-email">Email</label>
-                  <input id="res-email" name="email" type="email" required autoComplete="email" placeholder="name@example.de" />
+                  <input id="res-email" name="email" type="email" required autoComplete="email" placeholder="name@example.de" {...errorProps('res-email', reserve.errors.email)} />
+                <FieldError id="res-email" message={reserve.errors.email} />
                 </div>
               </div>
               <div className="field">
@@ -203,6 +207,7 @@ export default function OrderForms() {
                 </label>
                 <textarea id="res-notes" name="notes" rows={2} placeholder="Birthday, high chair, window table" />
               </div>
+              <Consent id="res-consent" error={reserve.errors.consent} />
               <button type="submit" className="btn btn-ink btn-full" disabled={reserve.loading}>
                 {reserve.loading ? 'Sending…' : 'Request table'}
               </button>

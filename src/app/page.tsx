@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import MapEmbed from '@/components/MapEmbed';
 import { ArrowRight, Bowl, Gift, Key, Spark } from '@/components/Icons';
 import OpenStatus from '@/components/OpenStatus';
 import { site } from '@/lib/site';
@@ -50,7 +51,7 @@ export default function HomePage() {
         <div className="hero-media">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src="https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=2000&q=80"
+            src="/images/photo-1585937421612-70a008356fbe.jpg"
             alt=""
             fetchPriority="high"
           />
@@ -123,7 +124,7 @@ export default function HomePage() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="img-a"
-              src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=900&q=80"
+              src="/images/photo-1517248135467-4c7edcad34c4.jpg"
               alt="Warmly lit dining room set for dinner"
               loading="lazy"
             />
@@ -340,14 +341,7 @@ export default function HomePage() {
               </a>
             </div>
           </div>
-          <div className="map-frame" data-reveal style={{ ['--d' as string]: 1 }}>
-            <iframe
-              src={site.mapsEmbed}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
-              title="Map showing Taj Mahal at Am Zeughaus 28, Schweinfurt"
-            />
-          </div>
+          <MapEmbed />
         </div>
       </section>
     </>
